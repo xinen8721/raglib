@@ -18,6 +18,35 @@ A powerful Retrieval-Augmented Generation (RAG) application built with Streamlit
 
 ---
 
+## 🎬 Demo
+
+See the application in action! Upload a PDF, process it, and start asking questions with full source attribution.
+
+![RAG Knowledge Base Demo](screenshots/demo.gif)
+
+### What You're Seeing:
+- ✅ **PDF Processed**: 63 chunks extracted from a 2.7MB research paper
+- 🎯 **Configurable Settings**: Chunk size (1000), overlap (200), retrieval count (4)
+- 💬 **Ready for Questions**: Chat interface ready to answer questions about the document
+- 📚 **Source References**: Each answer shows the exact passages used
+
+### Try It Yourself:
+```bash
+# Clone and run
+git clone https://github.com/xinen8721/raglib.git
+cd raglib
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp env.template .env
+# Add your OPENAI_API_KEY to .env
+streamlit run app.py
+```
+
+Upload any PDF and start asking questions in seconds! 🚀
+
+---
+
 ## 🚀 Quick Start (5 Minutes)
 
 ### Prerequisites
