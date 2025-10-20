@@ -20,8 +20,8 @@ load_dotenv()
 
 # Page configuration
 st.set_page_config(
-    page_title="RAG Knowledge Base",
-    page_icon="📚",
+    page_title="Legal AI Assistant - IRAC Analysis",
+    page_icon="⚖️",
     layout="wide"
 )
 
@@ -118,16 +118,29 @@ def get_rag_response(query: str):
         with st.spinner("Searching documents..."):
             docs = retriever.invoke(query)
 
-        # Create prompt template
-        template = """Use the following pieces of context to answer the question at the end.
-If you don't know the answer, just say that you don't know, don't try to make up an answer.
+        # Create IRAC method prompt template for legal analysis
+        template = """You are a legal AI assistant. Analyze the question using the IRAC method (Issue, Rule, Application, Conclusion) based on the provided legal document context.
 
-Context:
+Context from Legal Document:
 {context}
 
-Question: {question}
+Legal Question: {question}
 
-Answer:"""
+Provide your analysis in IRAC format:
+
+**ISSUE:**
+[Clearly state the legal issue or question to be resolved]
+
+**RULE:**
+[State the applicable legal rules, principles, or provisions from the document]
+
+**APPLICATION:**
+[Apply the rules to the specific facts or situation in the question, referencing specific sections of the document]
+
+**CONCLUSION:**
+[Provide a clear conclusion answering the legal question]
+
+Please structure your response following this IRAC format strictly. If the document doesn't contain relevant information, state that clearly in the Issue section."""
 
         prompt = ChatPromptTemplate.from_template(template)
 
@@ -211,52 +224,53 @@ with st.sidebar:
         "Temperature",
         min_value=0.0,
         max_value=1.0,
-        value=0.7,
+        value=0.2,
         step=0.1,
-        key="temperature"
+        key="temperature",
+        help="Low temperature for precise legal analysis (0.1-0.3 recommended)"
     )
 
     st.divider()
 
     # Document Processing Settings
-    st.subheader("Document Processing")
-
+    st.subheader("📄 Legal Document Settings")
+    
     chunk_size = st.number_input(
         "Chunk Size",
         min_value=100,
-        max_value=2000,
-        value=1000,
+        max_value=3000,
+        value=1500,
         step=100,
-        help="Size of text chunks for processing"
+        help="Larger chunks for legal clauses (recommended: 1500-2000)"
     )
-
+    
     chunk_overlap = st.number_input(
         "Chunk Overlap",
         min_value=0,
         max_value=500,
-        value=200,
+        value=300,
         step=50,
-        help="Overlap between consecutive chunks"
+        help="Higher overlap for legal context (recommended: 250-400)"
     )
-
+    
     st.number_input(
         "Number of Chunks to Retrieve",
         min_value=1,
-        max_value=10,
-        value=4,
+        max_value=12,
+        value=6,
         key="num_chunks",
-        help="Number of relevant chunks to use for answering"
+        help="More chunks for comprehensive legal analysis (recommended: 6-8)"
     )
 
     st.divider()
 
     # PDF Upload
-    st.subheader("📄 Upload Document")
-
+    st.subheader("⚖️ Upload Legal Document")
+    
     uploaded_file = st.file_uploader(
-        "Choose a PDF file",
+        "Upload Legal Document (PDF)",
         type="pdf",
-        help="Upload a PDF document to create a knowledge base"
+        help="Upload contracts, statutes, case law, regulations, or any legal document"
     )
 
     if uploaded_file is not None:
@@ -285,8 +299,21 @@ with st.sidebar:
 
 
 # Main content area
-st.title("📚 RAG Knowledge Base")
-st.markdown("Upload a PDF document and ask questions about its content!")
+st.title("⚖️ Legal AI Assistant")
+st.markdown("Upload legal documents and get IRAC method analysis for your legal questions")
+
+# Add IRAC method explanation
+with st.expander("ℹ️ What is IRAC Method?"):
+    st.markdown("""
+    **IRAC** is a legal analysis framework used by attorneys and law students:
+    
+    - **I**ssue: What is the legal question?
+    - **R**ule: What law/rule applies?
+    - **A**pplication: How does the rule apply to the facts?
+    - **C**onclusion: What is the answer?
+    
+    This AI assistant will analyze your legal documents using this structured approach.
+    """)
 
 # Check for API keys
 if embedding_type == "openai" or llm_provider == "openai":
@@ -295,9 +322,9 @@ if embedding_type == "openai" or llm_provider == "openai":
 
 # Display status
 if not st.session_state.documents_processed:
-    st.info("👈 Please upload and process a PDF document to get started.")
+    st.info("👈 Please upload a legal document (contract, statute, case law, etc.) to begin analysis.")
 else:
-    st.success(f"✅ Document processed! Ask questions below.")
+    st.success(f"✅ Legal document processed! Ask your legal questions below for IRAC analysis.")
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -314,9 +341,9 @@ for message in st.session_state.messages:
                     st.divider()
 
 # Chat input
-if prompt := st.chat_input("Ask a question about your document..."):
+if prompt := st.chat_input("Ask a legal question (e.g., 'What are the termination clauses?', 'What are the liability provisions?')"):
     if not st.session_state.documents_processed:
-        st.error("Please upload and process a PDF document first!")
+        st.error("Please upload and process a legal document first!")
     else:
         # Add user message to chat
         st.session_state.messages.append({"role": "user", "content": prompt})
@@ -352,8 +379,9 @@ st.divider()
 st.markdown(
     """
     <div style='text-align: center; color: gray;'>
-    <small>Built with Streamlit, LangChain, and ChromaDB |
-    Switch between OpenAI and Ollama models in the sidebar</small>
+    <small>⚖️ Legal AI Assistant | IRAC Method Analysis | Built with Streamlit, LangChain, and ChromaDB<br>
+    <strong>Disclaimer:</strong> This tool provides AI-generated legal analysis for informational purposes only. 
+    It is not a substitute for professional legal advice. Consult a qualified attorney for legal matters.</small>
     </div>
     """,
     unsafe_allow_html=True
