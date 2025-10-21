@@ -19,9 +19,11 @@ class LLMHandler:
     ]
 
     OLLAMA_DEFAULT_MODELS = [
+        "mistral-nemo",
         "llama2",
-        "mistral",
+        "llama3",
         "phi",
+        "gemma",
         "neural-chat",
         "codellama"
     ]

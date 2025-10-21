@@ -64,12 +64,15 @@ def initialize_components():
         return None, None
 
 
-def process_pdf(pdf_file, processor: PDFProcessor):
+def process_pdf(pdf_file, processor: PDFProcessor, use_ocr: bool = False):
     """Process uploaded PDF file."""
     try:
-        with st.spinner("Processing PDF..."):
-            # Process PDF
-            documents = processor.process_pdf(pdf_file, pdf_file.name)
+        with st.spinner("Processing PDF..." + (" with OCR" if use_ocr else "")):
+            # Extract text with optional OCR
+            text = processor.extract_text_from_pdf(pdf_file, use_ocr=use_ocr)
+
+            # Chunk text
+            documents = processor.chunk_text(text, metadata={"source": pdf_file.name})
             st.session_state.current_filename = pdf_file.name
 
             # Get embedding model
@@ -234,7 +237,7 @@ with st.sidebar:
 
     # Document Processing Settings
     st.subheader("📄 Legal Document Settings")
-    
+
     chunk_size = st.number_input(
         "Chunk Size",
         min_value=100,
@@ -243,7 +246,7 @@ with st.sidebar:
         step=100,
         help="Larger chunks for legal clauses (recommended: 1500-2000)"
     )
-    
+
     chunk_overlap = st.number_input(
         "Chunk Overlap",
         min_value=0,
@@ -252,7 +255,7 @@ with st.sidebar:
         step=50,
         help="Higher overlap for legal context (recommended: 250-400)"
     )
-    
+
     st.number_input(
         "Number of Chunks to Retrieve",
         min_value=1,
@@ -266,7 +269,14 @@ with st.sidebar:
 
     # PDF Upload
     st.subheader("⚖️ Upload Legal Document")
-    
+
+    # OCR Option
+    use_ocr = st.checkbox(
+        "📸 Enable OCR (for scanned documents)",
+        value=False,
+        help="Enable this for scanned contracts, photocopies, or image-based PDFs. Slower but can read text from images."
+    )
+
     uploaded_file = st.file_uploader(
         "Upload Legal Document (PDF)",
         type="pdf",
@@ -276,7 +286,7 @@ with st.sidebar:
     if uploaded_file is not None:
         if st.button("Process PDF", type="primary"):
             processor = PDFProcessor(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-            process_pdf(uploaded_file, processor)
+            process_pdf(uploaded_file, processor, use_ocr=use_ocr)
 
     # Show current document
     if st.session_state.current_filename:
@@ -306,12 +316,12 @@ st.markdown("Upload legal documents and get IRAC method analysis for your legal 
 with st.expander("ℹ️ What is IRAC Method?"):
     st.markdown("""
     **IRAC** is a legal analysis framework used by attorneys and law students:
-    
+
     - **I**ssue: What is the legal question?
     - **R**ule: What law/rule applies?
     - **A**pplication: How does the rule apply to the facts?
     - **C**onclusion: What is the answer?
-    
+
     This AI assistant will analyze your legal documents using this structured approach.
     """)
 
@@ -380,7 +390,7 @@ st.markdown(
     """
     <div style='text-align: center; color: gray;'>
     <small>⚖️ Legal AI Assistant | IRAC Method Analysis | Built with Streamlit, LangChain, and ChromaDB<br>
-    <strong>Disclaimer:</strong> This tool provides AI-generated legal analysis for informational purposes only. 
+    <strong>Disclaimer:</strong> This tool provides AI-generated legal analysis for informational purposes only.
     It is not a substitute for professional legal advice. Consult a qualified attorney for legal matters.</small>
     </div>
     """,

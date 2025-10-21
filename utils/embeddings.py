@@ -22,9 +22,12 @@ class EmbeddingManager:
     }
 
     OLLAMA_MODELS = {
-        "mistral": "mistral",
+        "nomic-embed-text": "nomic-embed-text",  # Best for embeddings
+        "mistral-nemo": "mistral-nemo",  # Available model
         "llama2": "llama2",
-        "nomic-embed-text": "nomic-embed-text"
+        "llama3": "llama3",
+        "phi": "phi",
+        "gemma": "gemma"
     }
 
     @staticmethod
